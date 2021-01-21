@@ -1,82 +1,45 @@
-# Maintainer:  dreieck
-# Contributor: tuxce <tuxce;net@gmail.com>
-# Contributor: Julien MISCHKOWITZ <wain@archlinux.fr>
-
-# Based on the aur/yaourt-git PKGBUILD.
-
-pkgname=yaourtix
-pkgver=1.9.r4
-pkgrel=2
-
-pkgdesc='Yaourt (= a pacman wrapper with extended features and AUR support) patched with user definable repo-support for building from source, and other customizepkg-enhancements. Artix support included.'
-arch=('any')
-url="http://www.archlinux.fr/yaourt-en/"
-license=('GPL')
-depends=(
-  'package-query>=1.10'
-  'pacman>=5.2'
-)
-makedepends=('git')
-optdepends=(
-  'aurvote: Vote for your favorite AUR packages.'
-  'git: Retrieve PKGBUILDs from Artix Linux and other repositories.'
-  'subversion: Retrieve PKGBUILDs from some unofficial user repositories.'
-  'customizepkg: Automatically modify PKGBUILD during install/upgrade.'
-)
-provides=(
-  "yaourt=${pkgver}"
-  "yaourt-git=${pkgver}"
-  "yaourtix=${pkgver}"
-)
-conflicts=(
-  "yaourt"
-  "yaourt-git"
-  "yaourtix-git"
-)
-replaces=("yaourtix-git<=1.9.r3.gfe1bcdd")
-backup=(
-  "etc/yaourtrc"
-  "etc/yaourtix/abs-logic.sh"
-)
-source=(
-  "yaourt::git+https://github.com/archlinuxfr/yaourt.git"
-  "abs-logic.sh::http://ix.io/1wrX"
-  "yaourt_customizepkg-abort-on-error.patch::http://ix.io/1l29"
-  "abs-logic.patch::http://ix.io/1l0D"
-  "abs.abort-on-error.patch::http://ix.io/1l0y"
-)
-sha256sums=(
-  'SKIP'
-  'a4ea804cf2c1a1f3f6e73a48063dd123326598dfe6f4ebf1a3555372f053ef04'
-  'ecdd938a3a0f36b85ab11a4c3d32df8572659dd259903c241ad444ef8a85c421'
-  '33773ffaf79f0852ab80d477fab9939c15a5d648e6d5e94588e1ef5091485b08'
-  'fd3f1beb524f3994a2086e4931fc6104c6a7640676ad9de2fea3796b2940c97d'
-)
+# Maintainer: Michiru Saito <urihcim at gmail dot com>
+pkgname=brother-mfc-930cdn
+pkgver=1.1.2_2
+pkgrel=3
+pkgdesc="LPR and CUPS driver for the Brother MFC-930CDN / MFC-930CDWN"
+arch=('i686' 'x86_64')
+url='http://support.brother.co.jp/j/b/downloadlist.aspx?c=jp&lang=ja&prod=mfc930cdn&os=127'
+license=('custom')
+depends=('cups')
+depends_x86_64=('lib32-glibc') 
+source=("http://download.brother.com/welcome/dlf100725/mfc930cdnlpr-${pkgver//_/-}.i386.rpm"
+        "http://download.brother.com/welcome/dlf100727/mfc930cdncupswrapper-${pkgver//_/-}.i386.rpm"
+        'http://support.brother.co.jp/j/s/support/agreement/agree_lpr.html'
+        'http://support.brother.co.jp/j/s/support/agreement/agree_gpl.html')
+md5sums=('ba35077822b44dddd963db42d1c4edc9'
+         'a3a9a6dbc167c183184a2e8c3a4a4789'
+         '54e299b76523231f07df19370317be2a'
+         '82ac408349dd57fdafc77adf4ffe34c9')
 
 prepare() {
-  cd yaourt/src
-  for _patch in 'yaourt_customizepkg-abort-on-error.patch' 'abs-logic.patch' 'abs.abort-on-error.patch'; do
-    msg "Applying patch '${_patch}' ..."
-    patch -N -p1 --follow-symlinks -i "${srcdir}/${_patch}"
-  done
-}
-
-#pkgver () {
-#  cd yaourt/src
-#  git describe --long | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-#}
-
-build() {
-  cd yaourt/src
-  make PREFIX=/usr sysconfdir=/etc localstatedir=/var
+  mkdir -p ./usr/share/cups/model
+  mkdir -p ./usr/lib/cups/filter
+  _wrapper=./usr/local/Brother/Printer/*/cupswrapper/cupswrapper*
+  sed -i \
+    -e '/stop\|restart\|sleep\|lpadmin/s/^/: /' \
+    -e 's@/usr@./usr@g' \
+    -e 's/lpinfo/echo/g' \
+    -e 's/"`/"\\`/g' \
+    -e 's/`"/\\`"/g' \
+    $_wrapper
+  $_wrapper
+  rm $_wrapper
+  find . -type f -name 'setupPrintcap*' -delete
+  sed -i 's@\./@/@' ./usr/lib/cups/filter/*lpdwrapper*
+  sed -i 's@/usr/local/@/usr/share/@g' $(grep -lr '/usr/local/Brother' ./)
 }
 
 package() {
-  cd yaourt/src
-  make PREFIX=/usr sysconfdir=/etc localstatedir=/var DESTDIR="$pkgdir" install
-
-  install -D -v -m755 "${srcdir}/abs-logic.sh" "${pkgdir}/etc/yaourtix/abs-logic.sh"
-
-  cd "${pkgdir}/usr/bin"
-  ln -sv 'yaourt' 'yaourtix'
+  mkdir -p "$pkgdir/usr/share/licenses/$pkgname"
+  cp -Rp "$srcdir/usr/bin" "$pkgdir/usr"
+  cp -Rp "$srcdir/usr/lib" "$pkgdir/usr"
+  cp -Rp "$srcdir/usr/share/cups" "$pkgdir/usr/share"
+  cp -Rp "$srcdir/usr/local/Brother" "$pkgdir/usr/share/Brother"
+  install -m 644 agree_*.html "$pkgdir/usr/share/licenses/$pkgname"
 }
