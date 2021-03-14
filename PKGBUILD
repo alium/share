@@ -1,46 +1,31 @@
-# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
-# Contributor: Corrado Primier <bardo@aur.archlinux.org>
+# Maintainer: Shatur <genaloner@gmail.com>
+# Contributor: alium <alium@artixlinux.org>
 
-pkgname=rtkit
-pkgver=0.13
-pkgrel=1.01
-pkgdesc="Realtime Policy and Watchdog Daemon"
+pkgname=optimus-manager-qt
+pkgver=1.6.0
+pkgrel=1
+pkgdesc='A Qt interface for Optimus Manager that allows to configure and switch GPUs on Optimus laptops using the tray menu'
 arch=(x86_64)
-url="https://github.com/heftig/rtkit"
-license=(GPL3 'custom:BSD')
-depends=(dbus polkit elogind)
-makedepends=(git meson vim)
-_commit=b9169402fe5e82d20efb754509eb0b191f214599  # tags/v0.13^0
-source=("git+https://github.com/heftig/rtkit?signed#commit=$_commit")
-sha256sums=('SKIP')
-validpgpkeys=('8218F88849AAC522E94CF470A5E9288C4FA415FA')  # Jan Alexander Steffens (heftig)
-
-pkgver() {
-  cd $pkgname
-  git describe --tags | sed 's/^v//;s/-/+/g'
-}
+url=https://github.com/Shatur95/optimus-manager-qt
+license=(GPL3)
+depends=(qt5-base qt5-svg qt5-x11extras 'optimus-manager>=1.4' 'knotifications' 'kiconthemes')
+makedepends=(qt5-tools libxrandr extra-cmake-modules)
+source=($pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz)
+sha256sums=('13e627617087845b81ca4ecd19cbbda7393d5bd823a77b7115f34fa4282991a9')
 
 prepare() {
-  cd $pkgname
+  cd $pkgbase-$pkgver
+  mkdir -p build
 }
 
 build() {
-  arch-meson $pkgname build -D installed_tests=false
+  cd $pkgname-$pkgver/build
+  cmake -D CMAKE_INSTALL_PREFIX="$pkgdir/usr" -D WITH_PLASMA=ON ..
+  cmake --build .
 }
 
-check() {
-  meson test -C build --print-errorlogs
-}
-
-package() {
-  DESTDIR="$pkgdir" meson install -C build
-  rm -r "$pkgdir/usr/lib/systemd"
-  rm -r "$pkgdir/usr/share/dbus-1/system.d"
-  
-  echo 'u rtkit 133 "RealtimeKit" /proc' |
-    install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
-
-  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgname/LICENSE
-  sed -ne '4,25p' $pkgname/rtkit.c |
-    install -Dm644 /dev/stdin "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+package_optimus-manager-qt() {
+  cd $pkgname-$pkgver/build-qt
+  cmake --install .
+  rm -f "${pkgdir}/usr/share/icons/hicolor/icon-theme.cache"
 }
