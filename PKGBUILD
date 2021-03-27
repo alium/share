@@ -1,31 +1,27 @@
-# Maintainer: Shatur <genaloner@gmail.com>
-# Contributor: alium <alium@artixlinux.org>
-
-pkgname=optimus-manager-qt
-pkgver=1.6.0
-pkgrel=1
-pkgdesc='A Qt interface for Optimus Manager that allows to configure and switch GPUs on Optimus laptops using the tray menu'
-arch=(x86_64)
-url=https://github.com/Shatur95/optimus-manager-qt
-license=(GPL3)
-depends=(qt5-base qt5-svg qt5-x11extras 'optimus-manager>=1.4' 'knotifications' 'kiconthemes')
-makedepends=(qt5-tools libxrandr extra-cmake-modules)
-source=($pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz)
-sha256sums=('13e627617087845b81ca4ecd19cbbda7393d5bd823a77b7115f34fa4282991a9')
-
-prepare() {
-  cd $pkgbase-$pkgver
-  mkdir -p build
-}
+pkgname=solo-python
+pkgver=0.0.27
+pkgrel=2
+pkgdesc="Tools and Python library for SoloKeys."
+arch=('any')
+url="https://github.com/solokeys/solo-python"
+license=('Apache' 'MIT')
+depends=('python' 'python-click>=7.0' 'python-cryptography' 'python-ecdsa'
+         'python-fido2' 'python-intelhex' 'python-pyserial' 'python-pyusb'
+         'python-requests')
+makedepends=('fakeroot' 'python-setuptools')
+source=("https://files.pythonhosted.org/packages/source/s/${pkgname}/${pkgname}-${pkgver}.tar.gz"
+	"https://raw.githubusercontent.com/alium/share/master/solo")
+sha256sums=('72a4699eb3b1979d7a2561c538987f868b5e7ee4e4a5b402b8a4d460d3dd6ec7'
+            'd4206872009b63693fc0eeec7c82096bff06b58cc938523f1820f46f071a5642')
 
 build() {
-  cd $pkgname-$pkgver/build
-  cmake -D CMAKE_INSTALL_PREFIX="$pkgdir/usr" -D WITH_PLASMA=ON ..
-  cmake --build .
+  cd $pkgname-$pkgver
+  python setup.py build
 }
 
-package_optimus-manager-qt() {
-  cd $pkgname-$pkgver/build-qt
-  cmake --install .
-  rm -f "${pkgdir}/usr/share/icons/hicolor/icon-theme.cache"
+package() {
+  cd $pkgname-$pkgver
+    python setup.py install --root="${pkgdir}" --optimize=1
+  install -m755 -d "${pkgdir}/usr/bin"
+  install -m755  "${srcdir}"/solo "${pkgdir}/usr/bin"
 }
