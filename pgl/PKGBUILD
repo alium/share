@@ -25,7 +25,7 @@ backup=('etc/pgl/allow.p2p'
     'etc/logrotate.d/pglcmd'
     'etc/logrotate.d/pgld')
 source=("git://git.code.sf.net/p/peerguardian/code/"
-        https://raw.githubusercontent.com/eserlxl/pgl-git-AUR-Patches/main/pgld-gcc10fix.patch)
+         https://raw.githubusercontent.com/alium/share/master/pgl/pgld-gcc10fix.patch)
 sha256sums=('SKIP'
             'b4cf3cb48620e04c5115be1db73eb25fb9c779120e4930b3e5d4bd04d8c4a13c')
 
