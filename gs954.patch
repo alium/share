@@ -1,0 +1,22 @@
+From 4eba2612773593e5d5d1c331ee1de9d2e614ded6 Mon Sep 17 00:00:00 2001
+From: Alexander Kernozhitsky <sh200105@mail.ru>
+Date: Mon, 1 Nov 2021 23:12:54 +0300
+Subject: [PATCH] Fix incompatibility with GhostScript 9.54
+
+Fixes #107. See the related issue for more information.
+---
+ src/boomaga/iofiles/postscriptfile.cpp | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/boomaga/iofiles/postscriptfile.cpp b/src/boomaga/iofiles/postscriptfile.cpp
+index 1c25b88..0ab6393 100644
+--- a/src/boomaga/iofiles/postscriptfile.cpp
++++ b/src/boomaga/iofiles/postscriptfile.cpp
+@@ -73,7 +73,6 @@ void PostScriptFile::convertToPdf(QFile &psFile, const QString &pdfFile)
+     args << "-sDEVICE=pdfwrite";
+     args << "-sOutputFile=" + pdfFile;
+     args << "-q";
+-    args << "-c" << ".setpdfwrite";
+     args << "-f" << "-";
+ 
+ 
